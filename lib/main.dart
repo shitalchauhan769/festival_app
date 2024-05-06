@@ -4,6 +4,7 @@ void main()
 {
   runApp(MaterialApp(
     debugShowCheckedModeBanner: false,
+    theme: ThemeData(fontFamily: 'Sevillana'),
     routes:app_routs,
   ),);
 }
