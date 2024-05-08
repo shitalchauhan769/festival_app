@@ -1,9 +1,13 @@
-import 'dart:ui';
+import 'dart:io';
+import 'dart:typed_data';
+import 'dart:ui' as ui;
 import 'package:festival_app/screen/model/festival_model.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/painting.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
+import 'package:path_provider/path_provider.dart';
 
 class FestivalScreen extends StatefulWidget {
   const FestivalScreen({super.key});
@@ -40,7 +44,7 @@ class _FestivalScreenState extends State<FestivalScreen> {
   FontWeight bold = FontWeight.normal;
   TextDecoration line = TextDecoration.underline;
   TextAlign center1 = TextAlign.center;
-  GlobalKey repaint=GlobalKey();
+  GlobalKey  rapaintkey=GlobalKey();
 
   @override
   Widget build(BuildContext context) {
@@ -54,7 +58,7 @@ class _FestivalScreenState extends State<FestivalScreen> {
       body: Column(
         children: [
           RepaintBoundary(
-            key: repaint,
+            key:  rapaintkey,
             child: Container(
               margin: EdgeInsets.all(10),
               height: 300,
@@ -130,9 +134,7 @@ class _FestivalScreenState extends State<FestivalScreen> {
                 IconButton.filled(
                     onPressed: () {
                       setState(() async {
-                   RanderRepaintBoundary boundary=repaint.currentContext!.findRenderObject() as RanderRepaintBoundary;
-
-
+                        saveImage();
                       });
                     },
                     icon: Icon(Icons.save_alt)),
@@ -277,7 +279,27 @@ class _FestivalScreenState extends State<FestivalScreen> {
       ),
     );
   }
+  Future<String> saveImage() async {
+    RenderRepaintBoundary boundary =
+    rapaintkey.currentContext!.findRenderObject()
+    as RenderRepaintBoundary;
+    ui.Image image = await boundary.toImage();
+    ByteData? byteData = await image.toByteData(
+        format: ui.ImageByteFormat.png);
+    var bytes = byteData!.buffer.asUint8List();
+    String name="${DateTime.now().hour}${DateTime.now().minute}${DateTime.now().second}${DateTime.now().day}${DateTime.now().month}${DateTime.now().year}";
+    if (Platform.isAndroid) {
+
+      File("/storage/emulated/0/Download/$name.png")
+          .writeAsBytes(bytes);
+      return "/storage/emulated/0/Download";
+    }
+    else {
+      Directory? dir = await getDownloadsDirectory();
+      await File("${(dir!).path}/$name.png")
+          .writeAsBytes(bytes);
+      return "${(dir).path}/$name.png";
+    }
+  }
 }
 
-class RanderRepaintBoundary {
-}
